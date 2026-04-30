@@ -1,6 +1,6 @@
 import http from "http";
 import dotenv from "dotenv";
-import { app } from "./server.js";
+import app from "./server.js";
 // import { logger } from "./utils/logger.js";
 import { DbSeeding } from "./config/db.js";
 dotenv.config();
