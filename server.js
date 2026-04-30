@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import serverless from "serverless-http";
 import session from "express-session";
 import { Routes as ProfileRoutes } from "./routes/profile.js";
 import { Routes as AuthRoutes } from "./routes/auth.js";
@@ -51,5 +50,3 @@ app.get("/", (req, res) => {
 });
 
 app.use(globalErrorHandler);
-
-export default serverless(app);
