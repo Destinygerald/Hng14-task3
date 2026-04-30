@@ -10,7 +10,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:5000",
+        url: "https://hng14-task3.vercel.app",
       },
     ],
     components: {
