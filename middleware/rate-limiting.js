@@ -1,5 +1,5 @@
-import { RedisStore } from "rate-limit-redis";
-import Redis from "ioredis";
+// import { RedisStore } from "rate-limit-redis";
+// import Redis from "ioredis";
 import rateLimit from "express-rate-limit";
 import { logger } from "../utils/logger.js";
 import { RateLimiterRedis } from "rate-limiter-flexible";
@@ -7,7 +7,7 @@ import { config } from "dotenv";
 
 config();
 
-const RedisClient = new Redis(process.env.REDIS_URL);
+// const RedisClient = new Redis(process.env.REDIS_URL);
 
 export function sensitiveEndpoint(maxRequest, time) {
   return rateLimit({
@@ -23,8 +23,8 @@ export function sensitiveEndpoint(maxRequest, time) {
         message: "Too Many Requests",
       });
     },
-    store: new RedisStore({
-      sendCommand: (...args) => RedisClient.call(...args),
-    }),
+    // store: new RedisStore({
+    //   sendCommand: (...args) => RedisClient.call(...args),
+    // }),
   });
 }
