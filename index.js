@@ -16,6 +16,6 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 
 server.listen(PORT, async () => {
-  await DbSeeding();
+  // await DbSeeding();
   console.log("Listening on PORT " + PORT);
 });
