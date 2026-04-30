@@ -1,6 +1,6 @@
 import { generatePKCE } from "../utils/pcke.js";
 import crypto from "node:crypto";
-import { logger } from "../utils/logger.js";
+// import { logger } from "../utils/logger.js";
 import { APIError } from "../middleware/error-handler.js";
 import axios from "axios";
 import { UserRepository } from "../repository/user-repository.js";
@@ -16,7 +16,7 @@ const REDIRECT_URI = process.env.REDIRECT_URI;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 export async function githubAuth(req, res) {
-  logger.info(`GET /auth/github endpoint hit`);
+  //logger.info(`GET /auth/github endpoint hit`);
   const { verifier, challenge } = generatePKCE();
 
   const state = crypto.randomBytes(16).toString("hex");
@@ -29,10 +29,10 @@ export async function githubAuth(req, res) {
     .replace("<state>", state)
     .replace("<challenge>", challenge);
 
-  logger.info(
-    "GET /auth/github: Redirecting to github authentication - ",
-    githubAuthUrl,
-  );
+  //logger.info(
+   // "GET /auth/github: Redirecting to github authentication - ",
+   // githubAuthUrl,
+  //);
   res.redirect(githubAuthUrl);
 }
 
