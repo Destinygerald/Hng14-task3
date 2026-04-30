@@ -1,0 +1,73 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum AgeGroup {
+  child
+  teenager
+  adult
+  senior
+}
+
+model Profile {
+  id                   String   @id @default(uuid()) @db.Uuid
+  name                 String   @unique
+  gender               Gender
+  gender_probability   Float
+  age                  Int
+  age_group            AgeGroup
+  country_id           String   @db.Char(2)
+  country_name         String
+  country_probability  Float
+  created_at           DateTime @default(now())
+
+  @@index([country_id])
+  @@index([age])
+  @@index([gender])
+  @@index([age_group])
+}
+
+enum Role {
+  admin
+  analyst
+}
+
+model User {
+  id                   String   @id @default(uuid()) @db.Uuid
+  github_id            String   @unique
+  username             String   
+  email                String
+  avatar_url           String
+  role                 Role
+  is_active            Boolean
+  last_login_at        DateTime
+  created_at           DateTime @default(now())
+
+  refreshTokens        RefreshToken[]
+
+  @@index([github_id])
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid()) @db.Uuid
+  token      String   @unique
+  expiresAt  DateTime @default(dbgenerated("NOW() + INTERVAL '5 MINUTES'"))
+  createdAt  DateTime @default(now())
+
+  userId     String   @db.Uuid
+  user User @relation(fields:[userId], references:[id], onDelete: Cascade)
+
+  @@map("refreshTokens")
+}

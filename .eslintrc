@@ -1,0 +1,9 @@
+{
+    "rules": {
+        "import/extensions": [
+            "error", 
+            "always", 
+            { "js": "always" }
+        ]
+    }
+}

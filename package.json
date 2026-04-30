@@ -1,0 +1,53 @@
+{
+  "name": "Hng Task 2",
+  "version": "1.0.0",
+  "description": "The server for all Books and Collections for the Libhub app",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./index.js",
+    "start": "node ./index.js",
+    "prisma:generate": "npx prisma generate",
+    "prisma:dev:deploy": "npx prisma migrate dev --name init",
+    "prisma:prod:deploy": "npx prisma migrate deploy",
+    "build": "prisma generate",
+    "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "node lib/seed.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "axios": "^1.9.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "cookie-session": "^2.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-session": "^1.19.0",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.10.1",
+    "jest": "^30.3.0",
+    "joi": "^18.1.2",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.2",
+    "node-cron": "^4.0.7",
+    "nodemailer": "^7.0.3",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "prisma": "^5.22.0",
+    "rate-limit-redis": "^4.3.1",
+    "rate-limiter-flexible": "^11.0.1",
+    "serverless-http": "^3.2.0",
+    "supertest": "^7.2.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^14.0.0",
+    "winston": "^3.19.0"
+  }
+}
