@@ -30,8 +30,8 @@ export async function githubAuth(req, res) {
     .replace("<challenge>", challenge);
 
   //logger.info(
-   // "GET /auth/github: Redirecting to github authentication - ",
-   // githubAuthUrl,
+  // "GET /auth/github: Redirecting to github authentication - ",
+  // githubAuthUrl,
   //);
   res.redirect(githubAuthUrl);
 }
@@ -40,7 +40,7 @@ export async function githubAuthCallback(req, res) {
   const { code, state, mode } = req.query;
 
   if (state !== req.session.state) {
-    logger.warn("GET /auth/github State Mismatch. Potential CSRF attack");
+    // logger.warn("GET /auth/github State Mismatch. Potential CSRF attack");
     throw new APIError("State Mismatch. Potential CSRF attack", 400);
   }
 
@@ -70,17 +70,6 @@ export async function githubAuthCallback(req, res) {
 
   const githubData = userResponse.data;
 
-  // console.log("***********************");
-  // console.log(githubData);
-
-  // username             String
-  // email                String
-  // avatar_url           String
-  // role                 Role
-  // is_active            Boolean
-  // last_login_at        DateTime
-  // created_at           DateTime @default(now())
-
   const userExists = await userModel.getUser(githubData.id.toString());
   const { login: username, id, email, avatar_url } = githubData;
   const parsedData = {
@@ -92,6 +81,11 @@ export async function githubAuthCallback(req, res) {
     github_id: id.toString(),
     last_login_at: new Date(),
   };
+
+  const isFirstUser = await userModel.findAll();
+  if (isFirstUser[0]) {
+    parsedData.role = "admin";
+  }
 
   let user;
 

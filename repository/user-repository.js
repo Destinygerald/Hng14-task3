@@ -23,6 +23,11 @@ export class UserRepository {
     return response;
   }
 
+  async findAll() {
+    const response = await this.model.findMany();
+    return response;
+  }
+
   async editUser(data) {
     const response = await this.model.update({
       where: {
