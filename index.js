@@ -7,15 +7,15 @@ dotenv.config();
 
 const PORT = process.env.PORT || 8000;
 
-const server = http.createServer(app);
+// const server = http.createServer(app);
 
-process.on("unhandledRejection", (reason, promise) => {
-  // logger.error("Server Failed:", promise, "reason: ", reason);
-  console.error(`Server Failed: ${reason}`);
-  return;
-});
+// process.on("unhandledRejection", (reason, promise) => {
+//   // logger.error("Server Failed:", promise, "reason: ", reason);
+//   console.error(`Server Failed: ${reason}`);
+//   return;
+// });
 
-server.listen(PORT, async () => {
-  // await DbSeeding();
-  console.log("Listening on PORT " + PORT);
-});
+// server.listen(PORT, async () => {
+//   // await DbSeeding();
+//   console.log("Listening on PORT " + PORT);
+// });
