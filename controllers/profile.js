@@ -163,7 +163,7 @@ export async function createProfile(req, res) {
   const { error } = validateProfileCreate(req.body);
 
   if (error) {
-    logger.warn("Validation Error", error.details[0].message);
+    //logger.warn("Validation Error", error.details[0].message);
     throw new APIError(error.details[0].message, 400);
   }
 
