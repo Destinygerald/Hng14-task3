@@ -9,7 +9,7 @@ import { globalErrorHandler } from "./middleware/error-handler.js";
 import { sensitiveEndpoint } from "./middleware/rate-limiting.js";
 import { urlVersioning } from "./middleware/api-versioning.js";
 
-import swaggerUi from "swagger-ui-express";
+// import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.js";
 import { logger } from "./middleware/logger.js";
 import { config } from "dotenv";
@@ -64,7 +64,38 @@ const swaggerUiOptions = {
   ],
 };
 
-app.use("/docs", swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+// Serve the raw spec
+app.get("/docs/spec.json", (req, res) => res.json(swaggerSpec));
+
+// Serve a self-contained Swagger UI page
+app.get("/docs", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>API Docs</title>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css">
+      </head>
+      <body>
+        <div id="swagger-ui"></div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-standalone-preset.min.js"></script>
+        <script>
+          window.onload = () => {
+            SwaggerUIBundle({
+              url: "/docs/spec.json",
+              dom_id: "#swagger-ui",
+              presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+              layout: "StandaloneLayout",
+            });
+          };
+        </script>
+      </body>
+    </html>
+  `);
+});
 
 app.use("/api/profiles", sensitiveEndpoint(60, 1 * 60 * 1000), ProfileRoutes);
 
