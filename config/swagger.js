@@ -17,9 +17,20 @@ const options = {
     },
     // ✅ Define paths directly here — no file scanning needed
     paths: {
-      "/auth/login": {
+      "/api/auth/github": {
+        get: {
+          summary: "Authenticates a user",
+          tags: ["Auth"],
+          responses: {
+            203: { description: "Login successful" },
+            401: { description: "Invalid credentials" },
+          },
+        },
+      },
+
+      "/api/auth/refresh": {
         post: {
-          summary: "Login a user",
+          summary: "Refeesh Expired token",
           tags: ["Auth"],
           requestBody: {
             required: true,
@@ -30,6 +41,43 @@ const options = {
                   properties: {
                     email: { type: "string" },
                     password: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Authenticated user data",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      refresh_token: { type: "string" },
+                      access_token: { type: "string" },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: "Invalid credentials" },
+          },
+        },
+      },
+
+      "/api/auth/logout": {
+        post: {
+          summary: "Logout a user",
+          tags: ["Auth"],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    refresh_token: { type: "string" },
                   },
                 },
               },
@@ -41,10 +89,95 @@ const options = {
           },
         },
       },
-      "/auth/register": {
+
+      "/api/profiles": {
+        get: {
+          summary: "Authenricates a user",
+          tags: ["Profile"],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: "header",
+              name: "Authorization",
+              required: true,
+              schema: { type: "string" },
+              description: "Bearer token e.g. `Bearer <token>`",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Authenticated user data",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      status: { type: "string" },
+                      page: { type: "string" },
+                      limit: { type: "string" },
+                      data: { type: "array" },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: "Missing or invalid token" },
+            403: { description: "Token expired" },
+          },
+        },
+      },
+
+      "/api/profiles/search": {
+        get: {
+          summary: "Authenricates a user",
+          tags: ["Profile"],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: "header",
+              name: "Authorization",
+              required: true,
+              schema: { type: "string" },
+              description: "Bearer token e.g. `Bearer <token>`",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Authenticated user data",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      status: { type: "string" },
+                      page: { type: "string" },
+                      limit: { type: "string" },
+                      data: { type: "array" },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: "Missing or invalid token" },
+            403: { description: "Token expired" },
+          },
+        },
+      },
+
+      "/api/profiles": {
         post: {
-          summary: "Register a new user",
-          tags: ["Auth"],
+          summary: "Authenricates a user",
+          tags: ["Profile"],
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              in: "header",
+              name: "Authorization",
+              required: true,
+              schema: { type: "string" },
+              description: "Bearer token e.g. `Bearer <token>`",
+            },
+          ],
           requestBody: {
             required: true,
             content: {
@@ -52,8 +185,6 @@ const options = {
                 schema: {
                   type: "object",
                   properties: {
-                    email: { type: "string" },
-                    password: { type: "string" },
                     name: { type: "string" },
                   },
                 },
@@ -61,11 +192,26 @@ const options = {
             },
           },
           responses: {
-            201: { description: "User created" },
-            400: { description: "Validation error" },
+            200: {
+              description: "Authenticated user data",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      status: { type: "string" },
+                      data: { type: "object" },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: "Missing or invalid token" },
+            403: { description: "Token expired" },
           },
         },
       },
+
       // Add all your other routes here...
     },
   },

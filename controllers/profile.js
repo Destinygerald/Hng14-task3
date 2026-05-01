@@ -8,7 +8,7 @@ import { Parser } from "json2csv";
 const DbProfile = new ProfileRepository();
 
 export async function getProfiles(req, res) {
- // logger.info(`GET /profiles endpoint hit`);
+  // logger.info(`GET /profiles endpoint hit`);
 
   const {
     gender,
@@ -90,7 +90,7 @@ export async function searchForProfile(req, res) {
   const known_age_group = ["child", "teenager", "adult", "elder"];
 
   if (!q) {
-   // logger.warn(`GET /profiles/search Unable to interpret query q: ${q}`);
+    // logger.warn(`GET /profiles/search Unable to interpret query q: ${q}`);
     throw new APIError("Unable to interpret query", 400);
   }
 
@@ -111,8 +111,8 @@ export async function searchForProfile(req, res) {
 
   if (q.includes("from")) {
     if (q.split("from ")[1].trim().includes(" ")) {
-     // logger.warn(
-        //`GET /profiles/search Unable to interpret query q: ${q.split("from ")[1].trim()}`,
+      // logger.warn(
+      //`GET /profiles/search Unable to interpret query q: ${q.split("from ")[1].trim()}`,
       //);
       throw new APIError("Unable to interpret query", 400);
     }
@@ -142,7 +142,7 @@ export async function searchForProfile(req, res) {
 
   if (Object.keys(parsedQuery).length === 0) {
     //logger.warn(
-     // `GET /profiles/search Unable to interpret query q: ${q}; Not viable query`,
+    // `GET /profiles/search Unable to interpret query q: ${q}; Not viable query`,
     //);
     throw new APIError("Unable to interpret query", 400);
   }
@@ -166,6 +166,8 @@ export async function createProfile(req, res) {
     //logger.warn("Validation Error", error.details[0].message);
     throw new APIError(error.details[0].message, 400);
   }
+
+  const { name } = req.body;
 
   const profileExists = await DbProfile.getByName(name);
 
