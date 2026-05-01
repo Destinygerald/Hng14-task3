@@ -41,9 +41,9 @@ app.use(logger);
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use("/api/profiles", sensitiveEndpoint(60, 1 * 60 * 100), ProfileRoutes);
+app.use("/profiles", sensitiveEndpoint(60, 1 * 60 * 1000), ProfileRoutes);
 
-app.use("/api/auth", sensitiveEndpoint(10, 1 * 60 * 100), AuthRoutes);
+app.use("/auth", sensitiveEndpoint(10, 1 * 60 * 1000), AuthRoutes);
 
 app.get("/", (req, res) => {
   res.send("Express on Vercel");

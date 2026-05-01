@@ -1,6 +1,6 @@
-// import app from "../server.js";
-// import serverless from "serverless-http";
+import dotenv from "dotenv";
+import { app } from "../server.js";
+import ServerlessHttp from "serverless-http";
+dotenv.config();
 
-// export default serverless(app);
-
-//import app from "../server.js";
+export default ServerlessHttp(app);
