@@ -1,11 +1,12 @@
-import http from "http";
+// import http from "http";
 import dotenv from "dotenv";
-import app from "./server.js";
+import { app } from "./server";
+import ServerlessHttp from "serverless-http";
 // import { logger } from "./utils/logger.js";
-import { DbSeeding } from "./config/db.js";
+// import { DbSeeding } from "./config/db.js";
 dotenv.config();
 
-const PORT = process.env.PORT || 8000;
+// const PORT = process.env.PORT || 8000;
 
 // const server = http.createServer(app);
 
@@ -19,3 +20,5 @@ const PORT = process.env.PORT || 8000;
 //   // await DbSeeding();
 //   console.log("Listening on PORT " + PORT);
 // });
+
+export default ServerlessHttp(app);

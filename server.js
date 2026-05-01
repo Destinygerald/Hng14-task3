@@ -14,7 +14,7 @@ import { swaggerSpec } from "./config/swagger.js";
 import { logger } from "./middleware/logger.js";
 import { config } from "dotenv";
 
-const app = express();
+export const app = express();
 
 config();
 
