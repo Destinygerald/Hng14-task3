@@ -1,30 +1,22 @@
-// import { RedisStore } from "rate-limit-redis";
-// import Redis from "ioredis";
 import rateLimit from "express-rate-limit";
-//import { logger } from "../utils/logger.js";
-import { RateLimiterRedis } from "rate-limiter-flexible";
-import { config } from "dotenv";
 
-config();
-
-// const RedisClient = new Redis(process.env.REDIS_URL);
-
-export function sensitiveEndpoint(maxRequest, time) {
+export function sensitiveEndpoint(max, windowMs) {
   return rateLimit({
-    max: maxRequest,
-    windowMs: time,
-    message: "Too many requests, please try again",
-    standardHeaders: true,
-    legacyHeaders: false,
+    max,
+    windowMs,
+    // ✅ read real IP from Vercel's proxy headers
+    keyGenerator: (req) => {
+      return (
+        req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
+        req.headers["x-real-ip"] ||
+        req.ip
+      );
+    },
     handler: (req, res) => {
-      logger.warn(`Sensitive endpoint rate limit exceeded for IP: ${req.ip}`);
       res.status(429).json({
         status: "error",
-        message: "Too Many Requests",
+        message: "Too many requests, please try again later.",
       });
     },
-    // store: new RedisStore({
-    //   sendCommand: (...args) => RedisClient.call(...args),
-    // }),
   });
 }

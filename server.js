@@ -16,6 +16,7 @@ import { config } from "dotenv";
 
 const app = express();
 
+app.set("trust proxy", 1);
 config();
 
 app.use(
@@ -51,7 +52,7 @@ app.use(
 // );
 
 app.use(express.json());
-app.use(cookieParser());
+app.use(cookieParser(process.env.SESSION_SECRET));
 
 app.use(logger);
 
