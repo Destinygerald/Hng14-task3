@@ -39,11 +39,24 @@ app.use(cookieParser());
 
 app.use(logger);
 
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+const swaggerUiOptions = {
+  customCssUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css",
+  customJs: [
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-standalone-preset.min.js",
+  ],
+};
 
-app.use("/profiles", sensitiveEndpoint(60, 1 * 60 * 1000), ProfileRoutes);
+app.use(
+  "/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, swaggerUiOptions),
+);
 
-app.use("/auth", sensitiveEndpoint(10, 1 * 60 * 1000), AuthRoutes);
+app.use("/api/profiles", sensitiveEndpoint(60, 1 * 60 * 1000), ProfileRoutes);
+
+app.use("/api/auth", sensitiveEndpoint(10, 1 * 60 * 1000), AuthRoutes);
 
 app.get("/", (req, res) => {
   res.send("Express on Vercel");
