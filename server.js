@@ -18,7 +18,23 @@ const app = express();
 
 config();
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdnjs.cloudflare.com",
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+        imgSrc: ["'self'", "data:", "https://cdnjs.cloudflare.com"],
+        workerSrc: ["'self'", "blob:"],
+      },
+    },
+  }),
+);
 
 app.use(
   cors({
@@ -48,11 +64,7 @@ const swaggerUiOptions = {
   ],
 };
 
-app.use(
-  "/docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec, swaggerUiOptions),
-);
+app.use("/docs", swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 
 app.use("/api/profiles", sensitiveEndpoint(60, 1 * 60 * 1000), ProfileRoutes);
 
