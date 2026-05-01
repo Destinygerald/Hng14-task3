@@ -14,7 +14,7 @@ import { swaggerSpec } from "./config/swagger.js";
 import { logger } from "./middleware/logger.js";
 import { config } from "dotenv";
 
-export const app = express();
+const app = express();
 
 config();
 
@@ -50,3 +50,5 @@ app.get("/", (req, res) => {
 });
 
 app.use(globalErrorHandler);
+
+export default app;
