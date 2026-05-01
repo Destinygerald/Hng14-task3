@@ -1,11 +1,11 @@
 import { generatePKCE } from "../utils/pcke.js";
 import crypto from "node:crypto";
-// import { logger } from "../utils/logger.js";
 import { APIError } from "../middleware/error-handler.js";
 import axios from "axios";
 import { UserRepository } from "../repository/user-repository.js";
 import { TokenRepository } from "../repository/token-repository.js";
 import { generateAccess, generateRefresh } from "../utils/tokenizer.js";
+import jwt from "jsonwebtoken";
 
 const userModel = new UserRepository();
 const tokenModel = new TokenRepository();
@@ -16,62 +16,66 @@ const REDIRECT_URI = process.env.REDIRECT_URI;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 export async function githubAuth(req, res) {
-  //logger.info(`GET /auth/github endpoint hit`);
   const { verifier, challenge } = generatePKCE();
-
   const state = crypto.randomBytes(16).toString("hex");
 
-  req.session.code_verifier = verifier;
-  req.session.state = state;
+  // ✅ Store verifier + state in signed cookies instead of session
+  res.cookie("pkce_verifier", verifier, {
+    httpOnly: true,
+    signed: true,
+    sameSite: "lax",
+  });
+  res.cookie("oauth_state", state, {
+    httpOnly: true,
+    signed: true,
+    sameSite: "lax",
+  });
 
   const githubAuthUrl = GITHUB_AUTH_URL.replace("<client_id>", CLIENT_ID)
     .replace("<redirect_uri>", REDIRECT_URI)
     .replace("<state>", state)
     .replace("<challenge>", challenge);
 
-  //logger.info(
-  // "GET /auth/github: Redirecting to github authentication - ",
-  // githubAuthUrl,
-  //);
   res.redirect(githubAuthUrl);
 }
 
 export async function githubAuthCallback(req, res) {
   const { code, state, mode } = req.query;
 
-  if (state !== req.session.state) {
-    // logger.warn("GET /auth/github State Mismatch. Potential CSRF attack");
+  // ✅ Read from signed cookies instead of session
+  const savedState = req.signedCookies.oauth_state;
+  const verifier = req.signedCookies.pkce_verifier;
+
+  if (state !== savedState) {
     throw new APIError("State Mismatch. Potential CSRF attack", 400);
   }
+
+  // ✅ Clear PKCE cookies — no longer needed
+  res.clearCookie("pkce_verifier");
+  res.clearCookie("oauth_state");
 
   const tokenResponse = await axios.post(
     "https://github.com/login/oauth/access_token",
     {
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
-      code: code,
-      code_verifier: req.session.code_verifier,
+      code,
+      code_verifier: verifier, // ✅ from cookie
       redirect_uri: REDIRECT_URI,
     },
-    {
-      headers: {
-        Accept: "application/json",
-      },
-    },
+    { headers: { Accept: "application/json" } },
   );
 
   const accessToken = tokenResponse.data.access_token;
 
   const userResponse = await axios.get("https://api.github.com/user", {
-    headers: {
-      Authorization: `bearer ${accessToken}`,
-    },
+    headers: { Authorization: `bearer ${accessToken}` },
   });
 
   const githubData = userResponse.data;
-
   const userExists = await userModel.getUser(githubData.id.toString());
   const { login: username, id, email, avatar_url } = githubData;
+
   const parsedData = {
     email: email || "",
     avatar_url,
@@ -83,73 +87,43 @@ export async function githubAuthCallback(req, res) {
   };
 
   const isFirstUser = await userModel.findAll();
-  if (isFirstUser[0]) {
-    parsedData.role = "admin";
-  }
+  if (isFirstUser[0]) parsedData.role = "admin";
 
-  let user;
-
-  if (!userExists) {
-    user = await userModel.create(parsedData);
-  } else {
-    user = await userModel.editUser(parsedData);
-  }
+  const user = userExists
+    ? await userModel.editUser(parsedData)
+    : await userModel.create(parsedData);
 
   const access_token = generateAccess(user);
   const refresh_token = generateRefresh();
 
-  const rfshToken = await tokenModel.create({
-    token: refresh_token,
-    userId: user.id,
-    // expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-  });
+  await tokenModel.create({ token: refresh_token, userId: user.id });
 
-  req.session.user = {
-    id: user.id,
-    role: user.role,
-    username: user.username,
-  };
+  // ✅ No req.session.user — identity lives in the JWT now
+  res.cookie("session_user", "1", { httpOnly: true, sameSite: "lax" });
 
-  res.cookie("session_user", "1", {
-    httpOnly: true,
-    sameSite: "lax",
-  });
-
-  // if (mode === "cli") {
   return res.status(200).json({
     status: "success",
     access_token,
     refresh_token,
     username: user.username,
   });
-  // }
-
-  // return res.redirect(process.env.WEB_URL + "/dashboard");
 }
 
 export async function refreshToken(req, res) {
   const { refresh_token } = req.body;
-
   const existing = await tokenModel.getTokenData(refresh_token);
 
-  if (!existing) {
-    throw new APIError("Invalid refresh token", 401);
-  }
+  if (!existing) throw new APIError("Invalid refresh token", 401);
 
   if (existing.expiresAt < new Date()) {
     await tokenModel.deleteToken(refresh_token);
-
     throw new APIError("Invalid refresh token", 401);
   }
 
   await tokenModel.deleteToken(refresh_token);
 
   const newRefresh = generateRefresh();
-
-  const newRfshToken = await tokenModel.create({
-    token: newRefresh,
-    userId: existing.user.id,
-  });
+  await tokenModel.create({ token: newRefresh, userId: existing.user.id });
 
   const access = generateAccess(existing.user);
 
@@ -163,30 +137,32 @@ export async function refreshToken(req, res) {
 export async function logout(req, res) {
   const { refresh_token } = req.body;
 
-  if (refresh_token) {
-    await tokenModel.deleteToken(refresh_token);
-  }
+  if (refresh_token) await tokenModel.deleteToken(refresh_token);
 
-  req.session.destroy(() => {});
-
+  // ✅ Just clear cookies — no session to destroy
   res.clearCookie("session_user");
+  res.clearCookie("pkce_verifier");
+  res.clearCookie("oauth_state");
 
-  res.json({
-    status: "success",
-    message: "Logged out",
-  });
+  res.json({ status: "success", message: "Logged out" });
 }
 
 export async function whoami(req, res) {
-  if (req.session.user) {
-    return res.json({
-      status: "success",
-      data: req.session.user,
-    });
+  // ✅ Read identity from JWT instead of session
+  const auth = req.headers["authorization"];
+  const token = auth?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ status: "error", message: "Unauthorized" });
   }
 
-  return res.status(401).json({
-    status: "error",
-    message: "Unauthorized",
-  });
+  try {
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+    return res.json({
+      status: "success",
+      data: { id: user.id, role: user.role, username: user.username },
+    });
+  } catch {
+    return res.status(401).json({ status: "error", message: "Unauthorized" });
+  }
 }

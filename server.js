@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import session from "express-session";
+// import session from "express-session";
 import { Routes as ProfileRoutes } from "./routes/profile.js";
 import { Routes as AuthRoutes } from "./routes/auth.js";
 import { globalErrorHandler } from "./middleware/error-handler.js";
@@ -42,13 +42,13 @@ app.use(
   }),
 );
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-  }),
-);
+// app.use(
+//   session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: true,
+//   }),
+// );
 
 app.use(express.json());
 app.use(cookieParser());
